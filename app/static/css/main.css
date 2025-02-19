@@ -1,0 +1,184 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 40px;
+    background: #f5f5f7;
+    color: #1d1d1f;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+#visualization {
+    width: 100%;
+    height: 800px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin: 20px 0;
+}
+
+.cell {
+    stroke: white;
+    stroke-width: 2px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.cell:hover {
+    opacity: 0.8;
+    transform: scale(1.02);
+}
+
+.label {
+    font-size: 14px;
+    fill: white;
+    pointer-events: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.document-viewer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100vh;
+    background: white;
+    box-shadow: -2px 0 4px rgba(0,0,0,0.1);
+    padding: 20px;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    overflow-y: auto;
+}
+
+.document-viewer.active {
+    transform: translateX(0);
+}
+
+.document-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 50%;
+    height: 100vh;
+    background: white;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.document-panel.visible {
+    transform: translateX(0);
+}
+
+.document-panel.hidden {
+    display: none;
+}
+
+/* Document Panel - Base Structure */
+#document-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 50%;
+    height: 100vh;
+    background: white;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+/* Panel States */
+#document-panel.visible {
+    transform: translateX(0);
+}
+
+#document-panel.hidden {
+    transform: translateX(100%);
+}
+
+.hidden {
+    display: none;
+}
+
+#query-container.hidden {
+    display: none;
+}
+
+.document-query {
+    margin-top: 20px;
+    padding: 15px;
+    border-top: 1px solid #eee;
+}
+
+#doc-query {
+    width: 80%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+#query-submit {
+    padding: 8px 15px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#query-response {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8fafc;
+    border-radius: 4px;
+}
+
+/* Document Viewer */
+#document-viewer {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    min-height: 600px;
+    background: white;
+    overflow: hidden;
+    position: relative;
+}
+
+/* PDF Iframe */
+#document-viewer iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+#document-viewer object,
+#document-viewer embed {
+    width: 100%;
+    height: 100%;
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+.error {
+    color: #ef4444;
+    padding: 1rem;
+    border: 1px solid #ef4444;
+    border-radius: 4px;
+    margin: 1rem 0;
+}
