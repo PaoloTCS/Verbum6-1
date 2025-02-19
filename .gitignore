@@ -64,9 +64,10 @@ logs/
 instance/
 .webassets-cache
 pdf_files/
-/pdf_files/*.pdf     # Only ignore PDFs in pdf_files directory
-/output/*.pdf        # Only ignore PDFs in output directory
-# Remove or comment out the global *.pdf pattern
+*.pdf               # Ignore all PDFs by default
+!/InputDocs/**/*.pdf # But allow PDFs in InputDocs and its subdirectories
+/pdf_files/*.pdf    # Explicitly ignore PDFs in pdf_files directory
+/output/*.pdf       # Explicitly ignore PDFs in output directory
 
 # Debug files
 debug.log
