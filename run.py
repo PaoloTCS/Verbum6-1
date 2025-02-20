@@ -6,6 +6,7 @@ Entry point for the Verbum6 Knowledge Landscape application.
 import os
 import sys
 import logging
+import argparse
 from app import create_app
 
 # Configure basic logging with timestamp
@@ -36,15 +37,14 @@ def get_environment():
         return 'development'
     return env
 
+def main():
+    # Get environment and port settings
+    env = get_environment()
+    port = get_port()
+    
+    # Create and configure the application instance
+    app = create_app(env)
+    app.run(host='0.0.0.0', port=port, debug=(env == 'development'))
+
 if __name__ == '__main__':
-    try:
-        env = get_environment()
-        port = get_port()
-        
-        # Create and configure the application instance
-        app = create_app(env)
-        app.run(host='0.0.0.0', port=port, debug=(env == 'development'))
-        
-    except Exception as e:
-        logger.error(f"Failed to start application: {str(e)}")
-        sys.exit(1)
+    main()

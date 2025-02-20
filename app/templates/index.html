@@ -14,12 +14,27 @@
             <span>Root</span>
         </nav>
         <div id="visualization"></div>
+        <div id="qa-interface" class="qa-container">
+            <div class="qa-header">
+                <h3>Document Q&A</h3>
+                <p id="current-doc"></p>
+            </div>
+            <div class="qa-input">
+                <input type="text" id="question-input" placeholder="Ask a question about this document...">
+                <button id="ask-button">Ask</button>
+            </div>
+            <div id="answer-display" class="qa-answer"></div>
+        </div>
         <div id="document-panel" class="hidden">
             <div class="document-toolbar">
                 <button id="close-doc" class="close-btn">&times;</button>
                 <h2 id="doc-title"></h2>
             </div>
             <div id="document-viewer"></div>
+            <div class="document-controls">
+                <button class="control-button" id="minimize-doc">Minimize</button>
+                <button class="control-button" id="close-doc">Close</button>
+            </div>
             <div id="query-container" class="hidden">
                 <div class="document-query">
                     <input type="text" id="doc-query" placeholder="Ask a question about this document...">

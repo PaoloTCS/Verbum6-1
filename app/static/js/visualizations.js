@@ -12,6 +12,7 @@ class VoronoiMap {
             .attr('height', this.height);
         
         this.initialize();
+        this.documentViewer = new DocumentViewer();
     }
 
     async initialize() {
@@ -151,7 +152,11 @@ class VoronoiMap {
             console.log('Document detected:', d.path);
             if (d.path.toLowerCase().endsWith('.pdf')) {
                 console.log('PDF document detected, attempting to load');
-                window.documentViewer.loadDocument(d.path);
+                if (this.documentViewer) {
+                    this.documentViewer.loadDocument(d.path);
+                } else {
+                    console.error('Document viewer not initialized');
+                }
             } else {
                 console.log('Non-PDF document detected:', d.path);
             }
@@ -203,44 +208,173 @@ class VoronoiMap {
 
 class DocumentViewer {
     constructor() {
-        this.viewer = document.getElementById('document-viewer');
-        if (!this.viewer) {
-            console.error('Document viewer element not found');
-        }
-        
-        // Change to use ID instead of class
         this.panel = document.getElementById('document-panel');
         if (!this.panel) {
             console.error('Document panel element not found');
+            return;
+        }
+
+        // Initialize panel content
+        this.panel.innerHTML = `
+            <div class="document-controls">
+                <button class="control-button" id="minimize-doc">Minimize</button>
+                <button class="control-button" id="close-doc">Close</button>
+            </div>
+            <div id="document-viewer"></div>
+            <div id="qa-interface" class="qa-container">
+                <div class="qa-input">
+                    <input type="text" id="question-input" placeholder="Ask a question about this document...">
+                    <button id="ask-button">Ask</button>
+                </div>
+                <div id="answer-display"></div>
+            </div>
+        `;
+
+        this.initializeControls();
+        this.initializeQA();
+    }
+
+    initializeControls() {
+        const minimizeBtn = document.getElementById('minimize-doc');
+        const closeBtn = document.getElementById('close-doc');
+        const viewer = document.getElementById('document-viewer');
+
+        if (minimizeBtn) {
+            minimizeBtn.addEventListener('click', () => {
+                if (viewer) {
+                    viewer.style.height = viewer.style.height === '30vh' ? '70vh' : '30vh';
+                }
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                if (this.panel) {
+                    this.panel.classList.add('hidden');
+                }
+            });
         }
     }
-    
+
+    initializeQA() {
+        const askButton = document.getElementById('ask-button');
+        const questionInput = document.getElementById('question-input');
+        
+        if (askButton && questionInput) {
+            console.log('Initializing Q&A handlers');
+            
+            askButton.addEventListener('click', () => {
+                const currentDoc = this.currentDocument;
+                if (currentDoc) {
+                    handleQuestionSubmit(currentDoc);
+                }
+            });
+
+            questionInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const currentDoc = this.currentDocument;
+                    if (currentDoc) {
+                        handleQuestionSubmit(currentDoc);
+                    }
+                }
+            });
+        }
+    }
+
     async loadDocument(path) {
+        if (!this.panel) return;
+        
         try {
-            console.group('Document Loading');
-            console.log('Attempting to load document:', path);
+            console.log('Document Loading:', path);
+            this.currentDocument = path;  // Store current document path
             
-            // Remove hidden class and add visible class
             this.panel.classList.remove('hidden');
-            this.panel.classList.add('visible');
+            const viewer = document.getElementById('document-viewer');
             
-            const pdfUrl = `/api/document/${encodeURIComponent(path)}?t=${Date.now()}`;
-            
-            if (path.toLowerCase().endsWith('.pdf')) {
-                this.viewer.innerHTML = `
-                    <iframe 
-                        src="${pdfUrl}"
-                        type="application/pdf"
-                        width="100%"
-                        height="100%"
-                        style="border: none;">
-                    </iframe>`;
+            if (viewer) {
+                const pdfUrl = `/api/document/${encodeURIComponent(path)}?t=${Date.now()}`;
+                viewer.innerHTML = `<embed src="${pdfUrl}" type="application/pdf" width="100%" height="100%">`;
             }
         } catch (error) {
             console.error('PDF loading error:', error);
-        } finally {
-            console.groupEnd();
         }
+    }
+}
+
+// Add this to your document load handler
+function handleDocumentLoad(docPath) {
+    // Show QA interface
+    document.getElementById('qa-interface').style.display = 'block';
+    document.getElementById('current-doc').textContent = `Current document: ${docPath}`;
+    
+    // Setup QA handlers
+    initializeQAInterface(docPath);
+}
+
+async function handleQuestionSubmit(docPath) {
+    console.log('handleQuestionSubmit called with:', docPath);
+    const questionInput = document.getElementById('question-input');
+    const answerDisplay = document.getElementById('answer-display');
+    const question = questionInput.value.trim();
+    
+    if (!question) {
+        console.log('No question entered');
+        return;
+    }
+    
+    console.log('Processing question:', question);
+    answerDisplay.innerHTML = '<em>Processing question...</em>';
+    
+    try {
+        console.log('Sending request to /api/ask');
+        const response = await fetch('/api/ask', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                question: question,
+                document: docPath
+            })
+        });
+        
+        console.log('Response received:', response.status);
+        const result = await response.json();
+        console.log('Result:', result);
+        
+        if (result.error) {
+            throw new Error(result.error);
+        }
+        
+        answerDisplay.innerHTML = `
+            <div class="answer-content">
+                <p><strong>${result.answer}</strong></p>
+                <p class="confidence">Confidence: ${(result.confidence * 100).toFixed(1)}%</p>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error:', error);
+        answerDisplay.innerHTML = `
+            <div class="error-message">
+                ${error.message}<br>
+                <small>Please try again or contact support.</small>
+            </div>
+        `;
+    }
+}
+
+// Update the document viewer initialization
+function initializeQAInterface(docPath) {
+    const askButton = document.getElementById('ask-button');
+    if (askButton) {
+        askButton.onclick = () => handleQuestionSubmit(docPath);
+        
+        // Also handle Enter key in input
+        document.getElementById('question-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleQuestionSubmit(docPath);
+            }
+        });
     }
 }
 
